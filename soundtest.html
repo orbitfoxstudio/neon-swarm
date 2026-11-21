@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound test</title>
+<style>
+  body { margin: 0; background: #08080f; color: #e8f6ff; font: 18px/1.5 system-ui, sans-serif; display: flex; justify-content: center; }
+  main { max-width: 420px; padding: 24px 16px; }
+  button { display: block; width: 100%; margin: 14px 0; padding: 18px; font-size: 20px; border-radius: 14px;
+           border: 2px solid #59f2ff; background: #10303a; color: #fff; cursor: pointer; }
+  #log { font-size: 15px; opacity: .8; white-space: pre-line; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sound test</h1>
+  <p>Tap each button and say which ones you can hear.</p>
+  <button id="beep">1. Beep (browser audio)</button>
+  <button id="mp3">2. Game audio recording (MP3)</button>
+  <p id="log"></p>
+</main>
+<script>
+  const log = (t) => (document.getElementById("log").textContent += t + "\n");
+  document.getElementById("beep").onclick = async () => {
+    const c = new (window.AudioContext || window.webkitAudioContext)();
+    await c.resume();
+    const o = c.createOscillator(), g = c.createGain();
+    o.frequency.value = 660; g.gain.setValueAtTime(0.3, c.currentTime); g.gain.linearRampToValueAtTime(0, c.currentTime + 0.8);
+    o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + 0.85);
+    log("Beep played (audio " + c.state + ", " + c.sampleRate + " Hz)");
+  };
+  const audio = new Audio("game-audio-recording.mp3");
+  document.getElementById("mp3").onclick = () => { audio.currentTime = 0; audio.play().then(() => log("Recording playing (5 s)"), (e) => log("Recording failed: " + e.message)); };
+</script>
+</body>
+</html>
