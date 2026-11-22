@@ -3,7 +3,55 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>Neon Swarm</title>
+		<!-- Neon Swarm's web page. Godot fills in the placeholders (dollar sign + GODOT_...) on export
+		     (html/custom_html_shell in export_presets.cfg). Based on Godot 4.7's default page;
+		     what's new: search and link-preview tags, and a loading screen with real text
+		     about the game, which is what search engines read (they can't see the game itself). -->
+		<title>Neon Swarm: Drone Survival Shooter · Play Free Online</title>
+		<script>window.PAGE_TITLE = document.title; /* Godot renames the tab on start; main.gd puts this back */</script>
+		<meta name="description" content="Fly a drone through endless neon swarms! Drag to move and it fires on its own. Level up, pick upgrades, beat the bosses. Free in your browser, no download.">
+		<link rel="canonical" href="https://orbitfoxstudio.github.io/neon-swarm/">
+		<meta name="robots" content="index, follow, max-image-preview:large">
+		<meta name="author" content="Orbit Fox Studio">
+		<meta name="theme-color" content="#080812">
+		<link rel="icon" type="image/png" sizes="256x256" href="index.icon.png">
+		<link rel="apple-touch-icon" href="index.apple-touch-icon.png">
+
+		<!-- Link previews (WhatsApp, Facebook, X, Discord, Telegram...) -->
+		<meta property="og:type" content="website">
+		<meta property="og:site_name" content="Orbit Fox Studio">
+		<meta property="og:title" content="Neon Swarm: fly the drone, survive the swarm">
+		<meta property="og:description" content="A free one-finger survival shooter. Play it in your browser on your phone or computer.">
+		<meta property="og:url" content="https://orbitfoxstudio.github.io/neon-swarm/">
+		<meta property="og:image" content="https://orbitfoxstudio.github.io/neon-swarm/og-image.jpg">
+		<meta property="og:image:width" content="1200">
+		<meta property="og:image:height" content="630">
+		<meta property="og:image:alt" content="Neon Swarm: a drone fighting a swarm of glowing enemies in a dark neon arena">
+		<meta property="og:locale" content="en_US">
+		<meta name="twitter:card" content="summary_large_image">
+
+		<!-- What search engines should know about the game (schema.org) -->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "VideoGame",
+			"name": "Neon Swarm",
+			"url": "https://orbitfoxstudio.github.io/neon-swarm/",
+			"image": "https://orbitfoxstudio.github.io/neon-swarm/og-image.jpg",
+			"description": "A free one-finger survival shooter you play in the browser. Fly a drone through a neon arena that keeps filling with enemies; it aims and fires on its own. Level up, pick one of three upgrades each time, survive swarms and bosses, and spend your coins on permanent upgrades.",
+			"genre": ["Action", "Shooter", "Arcade"],
+			"gamePlatform": "Web browser",
+			"applicationCategory": "Game",
+			"operatingSystem": "Any (runs in a web browser)",
+			"playMode": "SinglePlayer",
+			"inLanguage": "en",
+			"isAccessibleForFree": true,
+			"offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+			"author": {"@type": "Organization", "name": "Orbit Fox Studio", "url": "https://orbitfoxstudio.github.io/"},
+			"publisher": {"@type": "Organization", "name": "Orbit Fox Studio", "url": "https://orbitfoxstudio.github.io/"}
+		}
+		</script>
+
 		<style>
 html, body, #canvas {
 	margin: 0;
@@ -13,7 +61,7 @@ html, body, #canvas {
 
 body {
 	color: white;
-	background-color: black;
+	background-color: #080812;
 	overflow: hidden;
 	touch-action: none;
 }
@@ -26,68 +74,135 @@ body {
 	outline: none;
 }
 
-#status, #status-splash, #status-progress {
-	position: absolute;
-	left: 0;
-	right: 0;
-}
-
-#status, #status-splash {
-	top: 0;
-	bottom: 0;
-}
-
+/* Loading screen: shown while the game downloads, hidden when it starts.
+   The faint grid and colours match the game's arena. */
 #status {
+	position: absolute;
+	inset: 0;
 	background-color: #080812;
+	background-image:
+		linear-gradient(rgba(77, 89, 204, 0.12) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(77, 89, 204, 0.12) 1px, transparent 1px);
+	background-size: 48px 48px;
+	background-position: center;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	visibility: hidden;
+	padding: 16px;
+	box-sizing: border-box;
+	overflow: hidden;
+	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+	text-align: center;
 }
 
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
-}
-
-#status-splash.show-image--false {
-	display: none;
-}
-
-#status-splash.fullsize--true {
-	height: 100%;
+#status-card {
 	width: 100%;
-	object-fit: contain;
+	max-width: 440px;
 }
 
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
+#status-icon {
+	width: min(84px, 11vh);
+	height: auto;
+	border-radius: 22%;
 }
 
-#status-progress, #status-notice {
-	display: none;
+h1 {
+	margin: 0.15em 0 0;
+	color: #59f2ff;
+	font-weight: 800;
+	font-size: min(15vw, 7.6vh, 72px);
+	line-height: 1.0;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	text-shadow: 0 0 0.18em rgba(89, 242, 255, 0.7), 0 0 0.5em rgba(89, 242, 255, 0.35);
 }
+
+h1 span {
+	display: block;
+}
+
+.tagline {
+	margin: 0.5em 0 0;
+	font-weight: 700;
+	font-size: min(5vw, 2.6vh, 20px);
+}
+
+.tagline span {
+	display: inline-block;
+	white-space: nowrap;
+}
+
+.tagline .pink { color: #ff4073; }
 
 #status-progress {
-	bottom: 10%;
-	width: 50%;
-	margin: 0 auto;
+	display: none;
+	appearance: none;
+	-webkit-appearance: none;
+	width: min(300px, 80%);
+	height: 12px;
+	margin: 1.6vh auto 0;
+	border: 0;
+	border-radius: 6px;
+	background: #1d2140;
+	overflow: hidden;
 }
 
+#status-progress::-webkit-progress-bar { background: #1d2140; }
+#status-progress::-webkit-progress-value { background: #59f2ff; border-radius: 6px; }
+#status-progress::-moz-progress-bar { background: #59f2ff; border-radius: 6px; }
+
 #status-notice {
+	display: none;
 	background-color: #5b3943;
 	border-radius: 0.5rem;
 	border: 1px solid #9b3943;
 	color: #e0e0e0;
-	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
 	line-height: 1.3;
-	margin: 0 2rem;
-	overflow: hidden;
+	margin: 1rem 0 0;
 	padding: 1rem;
-	text-align: center;
-	z-index: 1;
+}
+
+#about {
+	margin: 2.4vh 0 0;
+	padding: 0.9em 1.1em;
+	border-radius: 14px;
+	background: rgba(89, 242, 255, 0.06);
+	border: 1px solid rgba(89, 242, 255, 0.18);
+	color: #c4cbe6;
+	font-size: min(3.7vw, 1.9vh, 15px);
+	line-height: 1.45;
+	text-align: left;
+}
+
+#about h2 {
+	margin: 0.2em 0 0.3em;
+	color: #66ff99;
+	font-size: 1.05em;
+}
+
+#about p, #about ul {
+	margin: 0 0 0.6em;
+}
+
+#about ul {
+	padding-left: 1.2em;
+}
+
+#about a, .credit a {
+	color: #59f2ff;
+}
+
+.credit {
+	margin: 1.6vh 0 0;
+	color: #8890b0;
+	font-size: min(3.4vw, 1.7vh, 13px);
+}
+
+noscript p {
+	margin: 1em 0 0;
+	color: #ffd933;
+	font-weight: 700;
 }
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
@@ -99,19 +214,36 @@ body {
 			Your browser does not support the canvas tag.
 		</canvas>
 
-		<noscript>
-			Your browser does not support JavaScript.
-		</noscript>
-
 		<div id="status">
-			<img id="status-splash" class="show-image--false fullsize--true use-filter--true" src="index.png" alt="">
-			<progress id="status-progress"></progress>
-			<div id="status-notice"></div>
+			<main id="status-card">
+				<img id="status-icon" src="index.icon.png" alt="" width="84" height="84">
+				<h1><span>Neon</span> <span>Swarm</span></h1>
+				<p class="tagline"><span>Fly the drone.</span> <span class="pink">Survive the swarm!</span></p>
+				<progress id="status-progress" aria-label="Loading the game"></progress>
+				<div id="status-notice"></div>
+				<noscript><p>This game needs JavaScript. Please turn it on and reload the page.</p></noscript>
+
+				<section id="about">
+					<h2>A free survival shooter for your browser</h2>
+					<p>Your drone is alone in a neon arena and the enemies keep coming. It fires on its own,
+					so you just steer. Grab the gems they drop to level up and pick one of three upgrades:
+					multishot, piercing bullets, orbiting orbs, shockwaves and more. Survive a swarm every
+					45 seconds and a boss every two minutes, then spend your coins on permanent upgrades
+					so each run gets you further.</p>
+					<h2>How to play</h2>
+					<ul>
+						<li><b>Phone or tablet:</b> drag anywhere to move (or switch to a joystick).</li>
+						<li><b>Computer:</b> drag with the mouse or use the arrow keys. Esc to pause.</li>
+					</ul>
+					<p>Free to play. No download, no sign-up.</p>
+				</section>
+				<p class="credit">A game by <a href="https://orbitfoxstudio.github.io/">Orbit Fox Studio</a> · Also try <a href="https://orbitfoxstudio.github.io/sunset-getaway/">Sunset Getaway</a></p>
+			</main>
 		</div>
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"mainPack":"index-20261121161726.pck","fileSizes":{"index-20261121161726.pck":590296,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"mainPack":"index-20261122103755.pck","fileSizes":{"index-20261122103755.pck":590784,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -128,11 +260,11 @@ const engine = new Engine(GODOT_CONFIG);
 			return;
 		}
 		if (mode === 'hidden') {
-			statusOverlay.remove();
+			// Hide rather than remove, so the text about the game stays on the page for search engines.
+			statusOverlay.style.display = 'none';
 			initializing = false;
 			return;
 		}
-		statusOverlay.style.visibility = 'visible';
 		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
 		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
 		statusMode = mode;
@@ -194,7 +326,7 @@ const engine = new Engine(GODOT_CONFIG);
 			});
 		} else {
 			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			const missingMsg = 'Sorry, this browser can\'t run the game. Try an up-to-date Chrome, Firefox, Safari or Edge.\nMissing:\n';
 			displayFailureNotice(missingMsg + missing.join('\n'));
 		}
 	} else {
